@@ -1,0 +1,346 @@
+/**
+ * URBAN STYLE - JavaScript Completo
+ * Funcionalidades: Busca, Filtros, Menu Mobile, Scroll, Animações
+ */
+
+// ============================================
+// DADOS DOS PRODUTOS
+// ============================================
+const produtos = [
+    {
+        id: 1,
+        nome: "Camisa Oversized Premium",
+        preco: "R$ 189,90",
+        categoria: "camisas",
+        imagem: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&q=80",
+        destaque: true
+    },
+    {
+        id: 2,
+        nome: "Calça Cargo Slim Fit",
+        preco: "R$ 259,90",
+        categoria: "calcas",
+        imagem: "https://images.unsplash.com/photo-1542272454315-4c01d7abdf4a?w=400&q=80",
+        destaque: true
+    },
+    {
+        id: 3,
+        nome: "Tênis Urban Runner Pro",
+        preco: "R$ 459,90",
+        categoria: "tenis",
+        imagem: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80",
+        destaque: true
+    },
+    {
+        id: 4,
+        nome: "Relógio Minimalista Gold",
+        preco: "R$ 329,90",
+        categoria: "acessorios",
+        imagem: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&q=80",
+        destaque: false
+    },
+    {
+        id: 5,
+        nome: "Camisa Linho Premium",
+        preco: "R$ 219,90",
+        categoria: "camisas",
+        imagem: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&q=80",
+        destaque: false
+    },
+    {
+        id: 6,
+        nome: "Calça Jeans Destroyed",
+        preco: "R$ 199,90",
+        categoria: "calcas",
+        imagem: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&q=80",
+        destaque: false
+    },
+    {
+        id: 7,
+        nome: "Tênis Street Classic",
+        preco: "R$ 379,90",
+        categoria: "tenis",
+        imagem: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&q=80",
+        destaque: false
+    },
+    {
+        id: 8,
+        nome: "Boné Urban Snapback",
+        preco: "R$ 89,90",
+        categoria: "acessorios",
+        imagem: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&q=80",
+        destaque: false
+    },
+    {
+        id: 9,
+        nome: "Camisa Polo Executive",
+        preco: "R$ 169,90",
+        categoria: "camisas",
+        imagem: "https://images.unsplash.com/photo-1625910513413-5fc70e5ab8ae?w=400&q=80",
+        destaque: false
+    },
+    {
+        id: 10,
+        nome: "Calça Jogger Tech",
+        preco: "R$ 229,90",
+        categoria: "calcas",
+        imagem: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400&q=80",
+        destaque: false
+    },
+    {
+        id: 11,
+        nome: "Tênis High Top Leather",
+        preco: "R$ 529,90",
+        categoria: "tenis",
+        imagem: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&q=80",
+        destaque: false
+    },
+    {
+        id: 12,
+        nome: "Mochila Urban Leather",
+        preco: "R$ 289,90",
+        categoria: "acessorios",
+        imagem: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80",
+        destaque: false
+    }
+];
+
+// ============================================
+// ELEMENTOS DOM
+// ============================================
+const header = document.getElementById('header');
+const menuToggle = document.getElementById('menuToggle');
+const nav = document.getElementById('nav');
+const searchInput = document.getElementById('searchInput');
+const productsGrid = document.getElementById('productsGrid');
+const destaquesGrid = document.getElementById('destaquesGrid');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const noResults = document.getElementById('noResults');
+const backToTop = document.getElementById('backToTop');
+const revealElements = document.querySelectorAll('.reveal');
+
+// ============================================
+// RENDERIZAR PRODUTOS
+// ============================================
+function renderProdutos(produtosFiltrados) {
+    if (produtosFiltrados.length === 0) {
+        productsGrid.innerHTML = '';
+        noResults.style.display = 'block';
+        return;
+    }
+    
+    noResults.style.display = 'none';
+    
+    productsGrid.innerHTML = produtosFiltrados.map(produto => `
+        <div class="product-card" data-category="${produto.categoria}">
+            <div class="product-image">
+                <img src="${produto.imagem}" alt="${produto.nome}" loading="lazy">
+                <span class="product-badge">${produto.categoria}</span>
+                <div class="product-overlay">
+                    <span class="product-overlay-btn">Ver Detalhes</span>
+                </div>
+            </div>
+            <div class="product-info">
+                <span class="product-category">${produto.categoria}</span>
+                <h3 class="product-name">${produto.nome}</h3>
+                <p class="product-price">${produto.preco}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    // Reaplicar animações nos novos elementos
+    observeNewElements();
+}
+
+// ============================================
+// RENDERIZAR DESTAQUES
+// ============================================
+function renderDestaques() {
+    const destaques = produtos.filter(p => p.destaque);
+    
+    destaquesGrid.innerHTML = destaques.map(produto => `
+        <div class="destaque-card">
+            <img src="${produto.imagem}" alt="${produto.nome}" loading="lazy">
+            <div class="destaque-info">
+                <h3>${produto.nome}</h3>
+                <p>${produto.preco}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ============================================
+// BUSCA EM TEMPO REAL
+// ============================================
+function filtrarProdutos() {
+    const termo = searchInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const categoriaAtiva = document.querySelector('.filter-btn.active').dataset.filter;
+    
+    let filtrados = produtos.filter(produto => {
+        const nome = produto.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const categoria = produto.categoria.toLowerCase();
+        const matchBusca = nome.includes(termo) || categoria.includes(termo);
+        const matchCategoria = categoriaAtiva === 'todos' || produto.categoria === categoriaAtiva;
+        
+        return matchBusca && matchCategoria;
+    });
+    
+    renderProdutos(filtrados);
+}
+
+searchInput.addEventListener('input', filtrarProdutos);
+
+// ============================================
+// FILTRO POR CATEGORIA
+// ============================================
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remover active de todos
+        filterBtns.forEach(b => b.classList.remove('active'));
+        // Adicionar active ao clicado
+        btn.classList.add('active');
+        
+        filtrarProdutos();
+    });
+});
+
+// ============================================
+// MENU MOBILE
+// ============================================
+function toggleMenu() {
+    menuToggle.classList.toggle('active');
+    nav.classList.toggle('active');
+    
+    // Criar/remove overlay
+    let overlay = document.querySelector('.nav-overlay');
+    if (nav.classList.contains('active')) {
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'nav-overlay';
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', toggleMenu);
+        }
+        setTimeout(() => overlay.classList.add('active'), 10);
+        document.body.style.overflow = 'hidden';
+    } else {
+        if (overlay) {
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 300);
+        }
+        document.body.style.overflow = '';
+    }
+}
+
+menuToggle.addEventListener('click', toggleMenu);
+
+// Fechar menu ao clicar em link
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+        if (nav.classList.contains('active')) {
+            toggleMenu();
+        }
+    });
+});
+
+// ============================================
+// HEADER SCROLL
+// ============================================
+function handleScroll() {
+    // Header background
+    if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+    } else {
+        header.classList.remove('scrolled');
+    }
+    
+    // Botão voltar ao topo
+    if (window.scrollY > 500) {
+        backToTop.classList.add('visible');
+    } else {
+        backToTop.classList.remove('visible');
+    }
+}
+
+window.addEventListener('scroll', handleScroll);
+
+// ============================================
+// VOLTAR AO TOPO
+// ============================================
+backToTop.addEventListener('click', () => {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+});
+
+// ============================================
+// ANIMAÇÕES AO SCROLL (Intersection Observer)
+// ============================================
+const observerOptions = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.1
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            // Opcional: parar de observar depois de animar
+            // observer.unobserve(entry.target);
+        }
+    });
+}, observerOptions);
+
+function observeNewElements() {
+    document.querySelectorAll('.reveal:not(.active)').forEach(el => {
+        observer.observe(el);
+    });
+}
+
+// Inicializar observação
+revealElements.forEach(el => observer.observe(el));
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    renderProdutos(produtos);
+    renderDestaques();
+    observeNewElements();
+    
+    // Smooth scroll para links âncora (fallback para navegadores antigos)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                const headerOffset = 80;
+                const elementPosition = target.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+
+// ============================================
+// EFEITO PARALLAX SUAVE NO HERO
+// ============================================
+let ticking = false;
+window.addEventListener('scroll', () => {
+    if (!ticking) {
+        window.requestAnimationFrame(() => {
+            const heroImg = document.querySelector('.hero-img');
+            if (heroImg && window.scrollY < window.innerHeight) {
+                heroImg.style.transform = `translateY(${window.scrollY * 0.4}px) scale(1.1)`;
+            }
+            ticking = false;
+        });
+        ticking = true;
+    }
+});
